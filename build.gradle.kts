@@ -28,6 +28,7 @@ kotlin {
 
 manifest {
     attributes = mapOf(
+        Pair("Plugin-Class", "org.seekers.python.PythonPlugin"),
         Pair("Plugin-Id", "python-plugin"),
         Pair("Plugin-Provider", "Seekers Contributors"),
         Pair("Plugin-Version", version.toString())
