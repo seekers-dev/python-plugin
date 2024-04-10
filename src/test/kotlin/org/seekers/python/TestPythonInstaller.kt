@@ -22,6 +22,8 @@ internal class TestPythonInstaller {
     @Test
     fun permissions() {
         Assertions.assertDoesNotThrow<Path> {
+            installer.download()
+            installer.unpack()
             Files.setPosixFilePermissions(File(settings["folder"], "client/run_client")
                 .toPath(), PosixFilePermissions.fromString("rwxrwxrwx")) }
     }

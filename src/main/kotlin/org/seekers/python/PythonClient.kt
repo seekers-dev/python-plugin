@@ -20,7 +20,7 @@ class PythonClient: SeekersClient {
     }
 
     override fun host(file: File) {
-        val cmd = PythonPlugin.settings.execCommand.replace("{file}", file.path).split(" ")
+        val cmd = PythonPlugin.settings.execCommand!!.replace("{file}", file.path).split(" ")
         val builder = ProcessBuilder(cmd)
         builder.redirectErrorStream(true)
 
