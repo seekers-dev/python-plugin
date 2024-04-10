@@ -1,40 +1,43 @@
-package org.seekers.python;
+package org.seekers.python
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.attribute.PosixFilePermissions
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.attribute.PosixFilePermissions;
-
-class TestPythonInstaller {
-
-    static PythonSettings settings = new PythonSettings();
-    static PythonInstaller installer = new PythonInstaller(settings);
+internal class TestPythonInstaller {
 
     @Test
-    void download() {
-        Assertions.assertDoesNotThrow(() -> installer.download());
+    fun workflow() {
+        Assertions.assertDoesNotThrow { installer.workflow() }
     }
 
     @Test
-    void workflow() {
-        Assertions.assertDoesNotThrow(() ->  installer.workflow());
+    fun download() {
+        Assertions.assertDoesNotThrow { installer.download() }
     }
 
     @Test
-    void permissions() {
-        Assertions.assertDoesNotThrow(() -> Files.setPosixFilePermissions(new File(settings.getProperty("folder"),
-                "client/run_client").toPath(), PosixFilePermissions.fromString("rwxrwxrwx")));
+    fun permissions() {
+        Assertions.assertDoesNotThrow<Path> {
+            Files.setPosixFilePermissions(File(settings["folder"], "client/run_client")
+                .toPath(), PosixFilePermissions.fromString("rwxrwxrwx")) }
     }
 
     @Test
-    void clean() {
-        Assertions.assertDoesNotThrow(() -> installer.clean());
+    fun clean() {
+        Assertions.assertDoesNotThrow { installer.clean() }
     }
 
     @Test
-    void clear() {
-        Assertions.assertDoesNotThrow(() -> installer.clear());
+    fun clear() {
+        Assertions.assertDoesNotThrow { installer.clear() }
+    }
+
+    companion object {
+        var settings: PythonSettings = PythonSettings()
+        var installer: PythonInstaller = PythonInstaller(settings)
     }
 }

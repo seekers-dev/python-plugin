@@ -1,121 +1,126 @@
-package org.seekers.python;
+package org.seekers.python
 
-import java.io.*;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.PosixFilePermissions;
-import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
+import java.io.*
+import java.net.URL
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.attribute.PosixFilePermissions
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
 
-public class PythonInstaller {
-
-    private final PythonSettings settings;
-
-    public PythonInstaller(PythonSettings settings) {
-        this.settings = settings;
-    }
-
-    public void workflow() throws IOException {
+class PythonInstaller(private val settings: PythonSettings) {
+    /**
+     * Runs the default workflow. First checks for install folder. If the folder does not exist, it will download the
+     * zip file from the release page, unpack it, give permissions to the execution file and delete all cached content.
+     */
+    @Throws(IOException::class)
+    fun workflow() {
         if (!check()) {
-            download();
-            unpack();
-            clear();
+            download()
+            unpack()
+            clear()
         }
     }
 
-    public boolean check() {
-        return Files.exists(Path.of(settings.getProperty("folder")));
+    /**
+     * Check if install folder exists.
+     */
+    private fun check(): Boolean {
+        return Files.exists(Path.of(settings["folder"]))
     }
 
     /**
-     * Download item from release page.
+     * Download zip file from release page.
      *
      * @throws IOException if it can not download from release page or can not write to output file.
      */
-    public void download() throws IOException {
-        System.out.print('[');
-        try (BufferedInputStream input = new BufferedInputStream(new URL(settings.getReleasePage()).openStream());
-             FileOutputStream output = new FileOutputStream(settings.getProperty("item"))) {
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-            while ((bytesRead = input.read(buffer, 0, 1024)) != -1) {
-                output.write(buffer, 0, bytesRead);
-                System.out.print('+');
+    @Throws(IOException::class)
+    fun download() {
+        BufferedInputStream(URL(settings.releasePage).openStream()).use { input ->
+            FileOutputStream(settings["item"]).use { output ->
+                val buffer = ByteArray(1024)
+                var bytesRead: Int
+                while ((input.read(buffer, 0, 1024).also { bytesRead = it }) != -1) {
+                    output.write(buffer, 0, bytesRead)
+                }
             }
         }
-        System.out.println(']');
     }
 
     /**
-     * Unpack downloaded file
+     * Unpacks a single zip entry.
+     *
+     * @param entry the zip entry
+     * @param stream the zip input stream which is read from
+     * @param directory the directory which is written
      */
-    public void unpack() throws IOException {
-        String fileZip = settings.getProperty("item");
-        File directory = new File(settings.getProperty("folder"));
+    private fun unpackEntry(entry: ZipEntry, stream: ZipInputStream, directory: File) {
+        val buffer = ByteArray(1024)
+        val newFile = File(directory, entry.name)
+        if (entry.isDirectory) {
+            if (!newFile.isDirectory && !newFile.mkdirs()) {
+                throw IOException("Failed to create directory $newFile")
+            }
+        } else {
+            val parent = newFile.parentFile
+            if (!parent.isDirectory && !parent.mkdirs()) {
+                throw IOException("Failed to create directory $parent")
+            }
 
-        byte[] buffer = new byte[1024];
-        try (ZipInputStream stream = new ZipInputStream(new FileInputStream(fileZip))) {
-            ZipEntry entry = stream.getNextEntry();
+            FileOutputStream(newFile).use { output ->
+                var len: Int
+                while ((stream.read(buffer).also { len = it }) > 0) {
+                    output.write(buffer, 0, len)
+                }
+            }
+        }
+    }
+
+    /**
+     * Unpack downloaded zip file.
+     */
+    @Throws(IOException::class)
+    fun unpack() {
+        val fileZip = settings["item"]
+        val directory = File(settings["folder"])
+
+        ZipInputStream(FileInputStream(fileZip)).use { stream ->
+            var entry = stream.nextEntry
             while (entry != null) {
-                File newFile = new File(directory, entry.getName());
-                if (entry.isDirectory()) {
-                    if (!newFile.isDirectory() && !newFile.mkdirs()) {
-                        throw new IOException("Failed to create directory " + newFile);
-                    }
-                } else {
-                    File parent = newFile.getParentFile();
-                    if (!parent.isDirectory() && !parent.mkdirs()) {
-                        throw new IOException("Failed to create directory " + parent);
-                    }
-
-                    try (FileOutputStream output = new FileOutputStream(newFile)) {
-                        int len;
-                        while ((len = stream.read(buffer)) > 0) {
-                            output.write(buffer, 0, len);
-                        }
-                    }
-                }
-                entry = stream.getNextEntry();
+                unpackEntry(entry, stream, directory) // Unpack single entry
+                entry = stream.nextEntry
             }
-            stream.closeEntry();
+            stream.closeEntry()
         }
 
-        // Give target execution permissions
-        Files.setPosixFilePermissions(new File(directory, "client/run_client").toPath(),
-                PosixFilePermissions.fromString("rwxrwxrwx"));
-    }
-
-    private static void clean(Path folder) throws IOException {
-        try (Stream<Path> stream = Files.list(folder)) {
-            var iterator = stream.iterator();
-            while (iterator.hasNext()) {
-                var item = iterator.next();
-                if (Files.isDirectory(item)) {
-                    clean(item);
-                } else {
-                    Files.delete(item);
-                }
-            }
-        }
-        Files.delete(folder);
+        // Give target execution permission
+        Files.setPosixFilePermissions(
+            File(directory, "client/run_client").toPath(),
+            PosixFilePermissions.fromString("rwxrwxrwx")
+        )
     }
 
     /**
-     * Clean installed files.
+     * Clean installed files. Deletes the output folder and all files that are in this folder.
      */
-    public void clean() throws IOException {
-        Path path = Path.of(settings.getProperty("folder"));
-        if (Files.exists(path) && Files.isDirectory(path)) {
-            clean(path);
+    @Throws(IOException::class)
+    fun clean(path: Path = Path.of(settings["folder"])) {
+        if (Files.exists(path)) {
+            if (Files.isDirectory(path)) Files.list(path).use { stream ->
+                val iterator = stream.iterator()
+                while (iterator.hasNext()) {
+                    clean(iterator.next()) // Clean sub files
+                }
+            }
+            Files.delete(path) // Delete file
         }
     }
 
     /**
-     * Clear downloaded zip file.
+     * Clear downloaded zip file. Deletes the cached file.
      */
-    public void clear() throws IOException {
-        Files.deleteIfExists(Path.of(settings.getProperty("item")));
+    @Throws(IOException::class)
+    fun clear() {
+        Files.deleteIfExists(Path.of(settings["item"]))
     }
 }

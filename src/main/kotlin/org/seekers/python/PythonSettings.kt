@@ -1,51 +1,45 @@
-package org.seekers.python;
+package org.seekers.python
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Map;
-import java.util.Properties;
+import java.io.IOException
+import java.util.*
 
-public class PythonSettings {
-    private final Properties properties = new Properties();
+class PythonSettings(private val properties: Properties = Properties()) {
 
-    public PythonSettings() {
-        try {
-            properties.load(getClass().getResourceAsStream("settings.properties"));
-        } catch (IOException ex) {
-            throw new InternalError("File not found");
+    init {
+        properties.load(javaClass.getResourceAsStream("settings.properties"))
+    }
+
+    private fun format(format: String): String {
+        var build = format
+        for ((key, value) in properties) {
+            build = build.replace("{$key}", value.toString())
+        }
+        return build
+    }
+
+    @Throws(IOException::class)
+    private fun readFile(file: String): String {
+        javaClass.getResourceAsStream(file).use { stream ->
+            if (stream == null) throw InternalError("File not found")
+            return String(stream.readAllBytes())
         }
     }
 
-    public String format(String format) {
-        for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-            format = format.replaceAll("\\{" + entry.getKey() + "}", entry.getValue().toString());
+    @get:Throws(IOException::class)
+    var releasePage: String? = null
+        get() {
+            if (field == null) field = format(readFile("release-page.txt"))
+            return field
         }
-        return format;
-    }
+        private set
 
-    private String releasePage;
-    private String execCommand;
-
-    private String readFile(String file) throws IOException {
-        try (InputStream stream = getClass().getResourceAsStream(file)) {
-            if (stream == null) throw new InternalError("File not found");
-            return new String(stream.readAllBytes());
+    @get:Throws(IOException::class)
+    var execCommand: String? = null
+        get() {
+            if (field == null) field = format(readFile("exec-command.txt"))
+            return field
         }
-    }
+        private set
 
-    public String getReleasePage() throws IOException {
-        if (releasePage == null)
-            releasePage = format(readFile("release-page.txt"));
-        return releasePage;
-    }
-
-    public String getExecCommand() throws IOException {
-        if (execCommand == null)
-            execCommand = format(readFile("exec-command.txt"));
-        return execCommand;
-    }
-
-    public String getProperty(String key) {
-        return properties.getProperty(key);
-    }
+    operator fun get(key: String): String = properties.getProperty(key)
 }
