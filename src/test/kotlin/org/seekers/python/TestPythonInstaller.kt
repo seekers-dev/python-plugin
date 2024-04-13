@@ -6,7 +6,9 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.attribute.PosixFilePermissions
+import kotlin.test.Ignore
 
+@Ignore("This test downloads many resources and simply consumes to much time for base tasks.")
 internal class TestPythonInstaller {
 
     @Test

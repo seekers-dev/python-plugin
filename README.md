@@ -7,7 +7,6 @@
     <img alt="GitHub License" src="https://img.shields.io/github/license/seekers-dev/python-plugin">
     <img alt="GitHub top language" src="https://img.shields.io/github/languages/top/seekers-dev/python-plugin">
     <img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/m/seekers-dev/python-plugin">
-
 </p>
 
 The python plugin is a plugin for the seekers server that enables client hosting from python files.
