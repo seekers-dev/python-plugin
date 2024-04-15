@@ -24,8 +24,8 @@ val seekersVersion = "47cfdb1"
 val pf4jVersion = "3.11.0"
 
 dependencies {
-    compileOnly(kotlin("stdlib"))
-    compileOnly("com.github.seekers-dev:seekers-server:$seekersVersion")
+    implementation(kotlin("stdlib"))
+    implementation("com.github.seekers-dev:seekers-server:$seekersVersion")
 
     kapt("org.pf4j:pf4j:${pf4jVersion}")
     testImplementation("org.jetbrains.kotlin:kotlin-test")
