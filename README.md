@@ -19,16 +19,7 @@ There is currently no release, please wait.
 
 ### Get this project
 
-Download the zip file of this property 
-
-### Modify resources
-
-Go to `src/main/resources/org/seekers/python`. There you can find multiple config files.
-You can change the release page at `release-page.txt`. This file defines an url from which this plugin will download the seekers python binary.
-At `exec-command.txt`, you can set command it will use to run a file.
-Both files use properties. You can find these properties at `settings.properties`. Every property is wrapped with brackets (`{}`).
-If you add a property in the settings, it will automatically be added for the other config files.
-Note that `{file}` is automatically declared and defines the input python file. You should not override this property name.
+Download the zip file of this repository or fork and clone it.
 
 ### Install java
 
@@ -56,20 +47,3 @@ Windows:
 ```
 
 That's it! You can find your jar file at `build/libs`.
-
-## Lifecycle
-
-```mermaid
-stateDiagram
-    [*] --> Ce
-    Ce: Checks if binaries exist?
-    Ce --> [*]: Yes
-
-    Ce --> D: No
-    D: Download item from release
-    D --> U
-    U: Unpacks zip folder
-    U --> Cl
-    Cl: Clear cached files
-    Cl --> [*]
-```

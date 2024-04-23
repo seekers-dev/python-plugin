@@ -20,7 +20,7 @@ repositories {
 
 apply(plugin = "org.jetbrains.kotlin.jvm")
 
-val seekersVersion = "47cfdb1"
+val seekersVersion = "-SNAPSHOT"
 val pf4jVersion = "3.11.0"
 
 dependencies {
@@ -56,13 +56,18 @@ tasks.register<Jar>("plugin") {
     archiveBaseName.set(project.name)
     archiveClassifier.set("dist")
 
-    //into("classes") {
-        with(tasks.named<Jar>("jar").get())
-    //}
+    with(tasks.named<Jar>("jar").get())
     dependsOn(configurations.runtimeClasspath)
-    into("lib") {
-        from({
-            configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }
-        })
-    }
+    from({
+        val libs = arrayOf("kotlin-stdlib")
+
+        fun matchesAny(name: String): Boolean {
+            for (lib in libs) {
+                if (name.contains(lib)) return true
+            }
+            return false
+        }
+
+        configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") && matchesAny(it.name) }
+    })
 }

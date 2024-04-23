@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2024  Seekers Contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.seekers.python
 
 import org.seekers.grpc.SeekersClient
@@ -9,7 +26,10 @@ import java.io.File
  */
 class PythonClient: SeekersClient {
     companion object {
-        private val logger = LoggerFactory.getLogger(SeekersClient::class.java)
+        private val logger = LoggerFactory.getLogger(PythonClient::class.java)
+
+        // Class must be loaded after extension setup, otherwise it will throw an exception
+        private val execCmd = PythonPlugin.config!!.fetch("exec-cmd")
     }
 
     private var process: Process? = null
@@ -20,7 +40,7 @@ class PythonClient: SeekersClient {
     }
 
     override fun host(file: File) {
-        val cmd = PythonPlugin.settings.execCommand!!.replace("{file}", file.path).replace("\n", " ")
+        val cmd = execCmd.replace("{file}", file.path).replace("\n", " ")
             .split(" ").filter { it.isNotBlank() }
         val builder = ProcessBuilder(cmd)
         builder.redirectErrorStream(true)

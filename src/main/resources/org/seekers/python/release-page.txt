@@ -1,1 +1,0 @@
-https://github.com/seekers-dev/seekers-py/releases/download/{version}/{item}
