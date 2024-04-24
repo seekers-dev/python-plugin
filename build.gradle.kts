@@ -42,9 +42,9 @@ tasks.named("build") {
     dependsOn(tasks.named("plugin"))
 }
 tasks.register<Jar>("plugin") {
-    description = "Create plugin jar"
-    group = "plugin"
-    duplicatesStrategy = DuplicatesStrategy.WARN
+    description = "Create uber jar"
+    group = "build"
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     manifest {
         attributes["Plugin-Class"] = "org.seekers.python.PythonPlugin"
@@ -54,20 +54,19 @@ tasks.register<Jar>("plugin") {
     }
 
     archiveBaseName.set(project.name)
-    archiveClassifier.set("dist")
+    archiveClassifier.set("uber")
 
     with(tasks.named<Jar>("jar").get())
     dependsOn(configurations.runtimeClasspath)
-    from({
-        val libs = arrayOf("kotlin-stdlib")
+    val libs = arrayOf("kotlin-stdlib")
 
-        fun matchesAny(name: String): Boolean {
-            for (lib in libs) {
-                if (name.contains(lib)) return true
-            }
-            return false
+    fun matchesAny(name: String): Boolean {
+        for (lib in libs) {
+            if (name.contains(lib)) return true
         }
+        return false
+    }
 
-        configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") && matchesAny(it.name) }
-    })
+    from(configurations.runtimeClasspath.get().filter{ matchesAny(it.name) }
+        .map { if (it.isDirectory) it else zipTree(it) })
 }
