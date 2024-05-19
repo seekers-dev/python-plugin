@@ -20,7 +20,7 @@ package org.seekers.python
 import org.ini4j.Ini
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import org.seekers.plugin.LanguageLoader
+import org.seekers.plugin.ClientLoader
 
 class TestPythonExtension {
     @Test
@@ -37,8 +37,8 @@ class TestPythonExtension {
     @Test
     fun testAddLanguageLoaders() {
         Assertions.assertDoesNotThrow {
-            val loaders = ArrayList<LanguageLoader>()
-            PythonExtension().addLanguageLoaders(loaders)
+            val loaders = ArrayList<ClientLoader>()
+            PythonExtension().addClientLoaders(loaders)
             Assertions.assertFalse(loaders.isEmpty())
         }
     }

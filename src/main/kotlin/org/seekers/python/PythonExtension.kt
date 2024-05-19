@@ -19,7 +19,8 @@ package org.seekers.python
 
 import org.ini4j.Profile.Section
 import org.pf4j.Extension
-import org.seekers.plugin.LanguageLoader
+import org.seekers.plugin.ClientLoader
+import org.seekers.plugin.GameMode
 import org.seekers.plugin.SeekersExtension
 
 @Extension
@@ -28,7 +29,12 @@ class PythonExtension: SeekersExtension {
         section!!.let { PythonPlugin.config = section }
     }
 
-    override fun addLanguageLoaders(loaders: MutableList<LanguageLoader>) {
+    override fun addClientLoaders(loaders: MutableList<ClientLoader>) {
         loaders.add(PythonLoader)
     }
+
+    override fun addGameModes(list: MutableList<GameMode>) {
+        // Nothing to add
+    }
+
 }

@@ -18,9 +18,9 @@
 package org.seekers.python
 
 import org.seekers.grpc.SeekersClient
-import org.seekers.plugin.LanguageLoader
+import org.seekers.plugin.ClientLoader
 
-object PythonLoader: LanguageLoader {
+object PythonLoader: ClientLoader {
     private val patterns = listOf(".py", ".python")
 
     override fun recognizedPatterns(): List<String> = patterns
